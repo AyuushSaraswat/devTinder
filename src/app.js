@@ -1,50 +1,29 @@
-const express = require('express')
-const app = express()
+const express = require("express");
+const dbConnect = require("./config/database.js");
+const app = express();
+const user = require("./models/userModel.js");
+dbConnect();
 
-// NOTE: Order of the Routes Matters !!
+app.post("/signup", async (req, res) => {
+  try {
+    const User = new user({
+      firstName: "Ayush",
+      lastName: "Saraswat",
+      email: "ayush@test.com",
+      password: "ayush@123",
+    });
 
-// 1) This will only match '/' and return this respose(hello ayush) for all other like =>  /test , /hello
-// 2) This will match all the HTTP method for home
-// app.use('/',(req,res)=>{
-// res.send("Hello Ayush !!!")
-// })
+    await User.save();
+    res.send("User created successfully");
 
+  } 
+  catch (error) {
+    console.log("Error creating User");
+    console.log(error.message);
+    res.status(500).send("Failed to create user");
+  }
+});
 
-// 1) This will match all the HTTP method for hello
-// app.use('/hello',(req,res)=>{
-// res.send("Hello Hello hello !!!")
-// })
-
-// 1) This will match all the HTTP method for test
-// app.use('/test',(req,res)=>{
-// res.send("Welcome to Test Route")
-// }) 
-
-
-// ----------------------------------X--------------------------------
-
-
-// 1) This will match only GET method for home
-// app.get('/',(req,res)=>{
-// res.send("Hello Ayush !!!")
-// })
-
-// 1) This will match only POST method for home
-// app.post('/',(req,res)=>{
-// res.send("Hello Ayush !!!")
-// })
-
-
-app.get('/users',(req,res)=>{
-res.send({name:"AYUSH",age:27})
-})
-
-app.post('/users',(req,res)=>{
-console.log("Saved data to DB")
-res.send("Data posted Sucessfully")
-})
-
-
-app.listen(7777,()=>{
-    console.log("Server is Listening at 7777")
-})
+app.listen(7777, () => {
+  console.log("Server is Started");
+});
