@@ -2,22 +2,66 @@ const express = require("express");
 const app = express();
 const dbConnect = require("./config/database.js");
 const User = require("./models/userModel.js");
+app.use(express.json());
 
-const data = {
-  name: "Ayush",
-  email: "ayush@gmail.com",
-  age: 27,
-  gender: "male",
-};
-
-app.post("/create", async (req, res) => {
+// Create user
+app.post("/signup", async (req, res) => {
   try {
-    const user = await new User(data);
+    // Created a new instance of User model
+    const user = await new User(req.body);
     user.role = "Admin";
     await user.save();
     res.send("User Added Successfully");
   } catch (error) {
     res.send("Error Saving user", error.message);
+  }
+});
+
+// Read single user using findOne
+app.get("/user", async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+    res.status(200).send(user);
+  } catch (error) {
+    res.status(500).send("Error fetching the user", error.message);
+  }
+});
+
+// Read all users using find({})
+app.get("/feed", async (req, res) => {
+  try {
+    const user = await User.find({});
+    if (user.length === 0) {
+      res.send("Failed to fetch users");
+    }
+    res.status(200).send(user);
+  } catch (error) {
+    res.status(500).send("Error fetching the user", error.message);
+  }
+});
+
+// Deleting a user
+app.delete("/user", async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.body.userID);
+    res.status(200).send("User Deleted");
+  } catch (error) {
+    res.status(500).send("Error Deleting the user", error.message);
+  }
+});
+
+app.patch("/user", async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(req.body.userID, req.body, {
+      returnDocument: "before",
+    });
+    console.log(user);
+    res.status(200).send("User Updated");
+  } catch (error) {
+    res.status(500).send("Error Updating the user", error.message);
   }
 });
 
