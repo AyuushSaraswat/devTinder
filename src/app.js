@@ -8,12 +8,12 @@ app.use(express.json());
 app.post("/signup", async (req, res) => {
   try {
     // Created a new instance of User model
-    const user = await new User(req.body);
+    const user = new User(req.body);
     user.role = "Admin";
     await user.save();
     res.send("User Added Successfully");
   } catch (error) {
-    res.send("Error Saving user", error.message);
+    res.send("Error Saving user: " + error.message);
   }
 });
 
@@ -57,6 +57,7 @@ app.patch("/user", async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(req.body.userID, req.body, {
       returnDocument: "before",
+      runValidators:true // Set it true to run validate() function on updating a user
     });
     console.log(user);
     res.status(200).send("User Updated");
