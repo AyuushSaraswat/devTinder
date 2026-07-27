@@ -53,11 +53,11 @@ app.delete("/user", async (req, res) => {
   }
 });
 
-app.patch("/user", async (req, res) => {
+app.patch("/user/:id", async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(req.body.userID, req.body, {
+    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
       returnDocument: "before",
-      runValidators:true // Set it true to run validate() function on updating a user
+      runValidators:true // Set it true to run validate() function on updating a user (patch)
     });
     console.log(user);
     res.status(200).send("User Updated");
