@@ -1,75 +1,25 @@
-const express = require('express')
-const app = express()
+# Dev Tinder APIs
 
-// NOTE: Order of the Routes Matters !!
+<!-- Auth router -->
+-POST /Signup
+-POST /login
+-POST /logout
 
-// 1) This will only match '/' and return this respose(hello ayush) for all other like =>  /test , /hello
-// 2) This will match all the HTTP method for home
-// app.use('/',(req,res)=>{
-// res.send("Hello Ayush !!!")
-// })
+<!-- Profile Router -->
+-GET  /profile/view
+-PATCH /profile/edit
+-PATCH /profile/Password
 
+<!-- Connection Request Router -->
+-POST /request/send/ignored/:userID
+-POST /request/send/interested/:userID
+-POST /request/review/accepted/:requestID
+-POST /request/review/rejected/:requestID
 
-// 1) This will match all the HTTP method for hello
-// app.use('/hello',(req,res)=>{
-// res.send("Hello Hello hello !!!")
-// })
-
-// 1) This will match all the HTTP method for test
-// app.use('/test',(req,res)=>{
-// res.send("Welcome to Test Route")
-// }) 
-
-
-// ----------------------------------X--------------------------------
+<!-- User Router -->
+-GET user/connections
+-GET user/requests
+-GET user/feed
 
 
-// 1) This will match only GET method for home
-// app.get('/',(req,res)=>{
-// res.send("Hello Ayush !!!")
-// })
 
-// 1) This will match only POST method for home
-// app.post('/',(req,res)=>{
-// res.send("Hello Ayush !!!")
-// })
-
-
-app.get('/users',(req,res)=>{
-res.send({name:"AYUSH",age:27})
-})
-
-app.post('/users',(req,res)=>{
-console.log("Saved data to DB")
-res.send("Data posted Sucessfully")
-})
-
-
-app.listen(7777,()=>{
-    console.log("Server is Listening at 7777")
-})
-
--------------------------------------X-----------------------------------
-
-MULTIPLE ROUTE HANDLERS:---
-
-
-const express = require("express");
-const app = express();
-
-app.use(
-  "/user",
-  (req, res, next) => {
-    console.log("Route Handler 1");
-    // res.send("Response 1");
-    next();
-  },
-  (req, res) => {
-    console.log("Route Handler 2");
-    res.send("Response 2");
-  }
-);
-
-app.listen(7777, () => {
-  console.log("Server is Listening at 7777");
-});

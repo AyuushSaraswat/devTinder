@@ -1,19 +1,59 @@
 const express = require("express");
 const app = express();
+const bcrypt = require("bcrypt");
 const dbConnect = require("./config/database.js");
 const User = require("./models/userModel.js");
 app.use(express.json());
+const vaildateSignUpData = require("./utils/validation.js");
+const userModel = require("./models/userModel.js");
 
 // Create user
 app.post("/signup", async (req, res) => {
   try {
-    // Created a new instance of User model
-    const user = new User(req.body);
-    user.role = "Admin";
+    vaildateSignUpData(req);
+
+    const { firstName, lastName, email, password } = req.body;
+
+    const hashedPass = await bcrypt.hash(password, 10);
+
+    const user = new User({
+      firstName,
+      lastName,
+      email,
+      password: hashedPass,
+    });
+
     await user.save();
+
     res.send("User Added Successfully");
   } catch (error) {
     res.send("Error Saving user: " + error.message);
+  }
+});
+
+app.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!validator.isEmail(email)) {
+      throw new Error("Email is not Valid");
+    }
+
+    const user = await userModel.findOne({ email });
+
+    if (!user) {
+      throw new Error("Invalid Credentials");
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      throw new Error("Invalid Credentials");
+    }
+
+    res.send("Login Successfull");
+  } catch (error) {
+    res.send("Login Failed: " + error.message);
   }
 });
 
@@ -57,7 +97,7 @@ app.patch("/user/:id", async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(req.params.id, req.body, {
       returnDocument: "before",
-      runValidators:true // Set it true to run validate() function on updating a user (patch)
+      runValidators: true, // Set it true to run validate() function on updating a user (patch)
     });
     console.log(user);
     res.status(200).send("User Updated");
