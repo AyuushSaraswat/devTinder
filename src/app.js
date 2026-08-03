@@ -3,9 +3,14 @@ const app = express();
 const bcrypt = require("bcrypt");
 const dbConnect = require("./config/database.js");
 const User = require("./models/userModel.js");
-app.use(express.json());
 const vaildateSignUpData = require("./utils/validation.js");
-const userModel = require("./models/userModel.js");
+const validator = require("validator");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+const userAuth = require("./middlewares/authMiddleware.js");
+
+app.use(express.json());
+app.use(cookieParser());
 
 // Create user
 app.post("/signup", async (req, res) => {
@@ -39,17 +44,25 @@ app.post("/login", async (req, res) => {
       throw new Error("Email is not Valid");
     }
 
-    const user = await userModel.findOne({ email });
+    const user = await User.findOne({ email });
 
     if (!user) {
       throw new Error("Invalid Credentials");
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await user.validatePassword(password)
+
 
     if (!isMatch) {
       throw new Error("Invalid Credentials");
     }
+
+    const token = await user.getJWT()
+
+
+    res.cookie("token", token, {
+      expires: new Date(Date.now() + 10 * 60 * 60 * 1000),
+    });
 
     res.send("Login Successfull");
   } catch (error) {
@@ -57,52 +70,12 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// Read single user using findOne
-app.get("/user", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.body.email });
-    if (!user) {
-      return res.status(404).send("User not found");
-    }
-    res.status(200).send(user);
+    const user = req.user;
+    res.send(user);
   } catch (error) {
-    res.status(500).send("Error fetching the user", error.message);
-  }
-});
-
-// Read all users using find({})
-app.get("/feed", async (req, res) => {
-  try {
-    const user = await User.find({});
-    if (user.length === 0) {
-      res.send("Failed to fetch users");
-    }
-    res.status(200).send(user);
-  } catch (error) {
-    res.status(500).send("Error fetching the user", error.message);
-  }
-});
-
-// Deleting a user
-app.delete("/user", async (req, res) => {
-  try {
-    const user = await User.findByIdAndDelete(req.body.userID);
-    res.status(200).send("User Deleted");
-  } catch (error) {
-    res.status(500).send("Error Deleting the user", error.message);
-  }
-});
-
-app.patch("/user/:id", async (req, res) => {
-  try {
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
-      returnDocument: "before",
-      runValidators: true, // Set it true to run validate() function on updating a user (patch)
-    });
-    console.log(user);
-    res.status(200).send("User Updated");
-  } catch (error) {
-    res.status(500).send("Error Updating the user", error.message);
+    res.send("Error: " + error.message);
   }
 });
 
