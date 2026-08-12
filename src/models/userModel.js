@@ -41,11 +41,15 @@ const userSchema = new mongoose.Schema(
     // By DEFAULT validate function runs for new users (post) , not existing ones (patch)
     gender: {
       type: String,
-      validate(value) {
-        if (!["male", "female"].includes(value)) {
-          throw new error("Not a valid gender");
-        }
-      },
+      enum:{
+        values:["male","female"],
+        message: `{VALUE} is not a valid gender type`,
+    }
+      // validate(value) {
+      //   if (!["male", "female"].includes(value)) {
+      //     throw new error("Not a valid gender");
+      //   }
+      // },
     },
     role: {
       type: String,
@@ -71,7 +75,11 @@ const userSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+
+
+
 userSchema.methods.getJWT = async function () {
+
   const user = this;
 
   const token = await jwt.sign({ _id: user._id }, "aayush", {
@@ -81,10 +89,14 @@ userSchema.methods.getJWT = async function () {
   return token;
 };
 
+
 userSchema.methods.validatePassword = async function (password) {
+  
   const user = this;
   const isPasswordValid = await bcrypt.compare(password, user.password);
   return isPasswordValid;
 };
 
-module.exports = mongoose.model("User", userSchema);
+ const User = mongoose.model("User", userSchema);
+
+ module.exports = User

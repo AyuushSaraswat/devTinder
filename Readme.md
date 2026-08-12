@@ -16,9 +16,10 @@
 -POST /request/review/accepted/:requestID
 -POST /request/review/rejected/:requestID
 
+
 <!-- User Router -->
+-GET user/requests/recieved
 -GET user/connections
--GET user/requests
 -GET user/feed
 
 
